@@ -9,7 +9,7 @@ function zoneLabel(zone: import('../types').ZonePos, handedness: import('../type
       : zone % 3 === 0
       ? (handedness === 'right' ? '外角' : '内角')
       : '真ん中';
-    return `${row}${col === '真ん中真ん中' ? '真ん中' : col}`;
+    return row === '真ん中' && col === '真ん中' ? '真ん中' : `${row}${col}`;
   }
   const labels: Record<string, string> = {
     'high': '高め（ボール）',
