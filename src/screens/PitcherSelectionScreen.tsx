@@ -28,7 +28,7 @@ export function PitcherSelectionScreen() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <div className="bg-navy-800 text-white px-4 py-4 flex items-center gap-3">
-        <button onClick={() => setScreen('menu')} className="text-white/70 hover:text-white text-lg">←</button>
+        <button onClick={() => setScreen(game ? 'batter-selection' : 'menu')} className="text-white/70 hover:text-white text-lg">←</button>
         <h1 className="text-lg font-bold">投手を選択</h1>
       </div>
 

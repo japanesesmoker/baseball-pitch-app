@@ -6,6 +6,7 @@ export function BatterSelectionScreen() {
   const { startBatter, game, pitchers, changePitcher, endGame } = useStore();
   const pitcher = pitchers.find((p) => p.id === game?.pitcherId);
   const [showIppatsushobu, setShowIppatsushobu] = useState(false);
+  const [confirmEnd, setConfirmEnd] = useState(false);
 
   // Find the pattern with the highest out rate across all results
   const bestPatternId = (() => {
@@ -114,12 +115,32 @@ export function BatterSelectionScreen() {
           >
             <span>🔄</span> 投手交代
           </button>
-          <button
-            onClick={() => endGame()}
-            className="w-full bg-white border border-gray-200 rounded-xl py-3 font-bold text-gray-400 shadow flex items-center justify-center gap-2 active:bg-gray-50 transition-colors"
-          >
-            <span>🏁</span> 試合終了
-          </button>
+          {confirmEnd ? (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-3">
+              <p className="text-red-600 text-sm font-bold text-center mb-2">試合を終了しますか？</p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => endGame()}
+                  className="flex-1 bg-red-500 text-white py-2 rounded-lg text-sm font-bold"
+                >
+                  終了する
+                </button>
+                <button
+                  onClick={() => setConfirmEnd(false)}
+                  className="flex-1 bg-gray-100 text-gray-600 py-2 rounded-lg text-sm"
+                >
+                  キャンセル
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={() => setConfirmEnd(true)}
+              className="w-full bg-white border border-gray-200 rounded-xl py-3 font-bold text-gray-400 shadow flex items-center justify-center gap-2 active:bg-gray-50 transition-colors"
+            >
+              <span>🏁</span> 試合終了
+            </button>
+          )}
         </div>
       </div>
     </div>
