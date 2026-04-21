@@ -1,28 +1,6 @@
 import { useStore } from '../store/useStore';
 import { StrikeZone } from '../components/StrikeZone';
 
-function zoneLabel(zone: import('../types').ZonePos, handedness: import('../types').BatterHandedness): string {
-  if (typeof zone === 'number') {
-    const row = zone <= 3 ? '高め' : zone <= 6 ? '真ん中' : '低め';
-    const col = zone % 3 === 1
-      ? (handedness === 'right' ? '内角' : '外角')
-      : zone % 3 === 0
-      ? (handedness === 'right' ? '外角' : '内角')
-      : '真ん中';
-    return row === '真ん中' && col === '真ん中' ? '真ん中' : `${row}${col}`;
-  }
-  const labels: Record<string, string> = {
-    'high': '高め（ボール）',
-    'low': '低め（ボール）',
-    'inner': 'インコース（ボール）',
-    'outer': 'アウトコース（ボール）',
-    'high-inner': '高めインコース（ボール）',
-    'high-outer': '高めアウトコース（ボール）',
-    'low-inner': '低めインコース（ボール）',
-    'low-outer': '低めアウトコース（ボール）',
-  };
-  return labels[zone] ?? zone;
-}
 
 export function PitchDisplayScreen() {
   const { game, pitchers, nextPitch, prevPitch, setScreen } = useStore();
@@ -85,12 +63,6 @@ export function PitchDisplayScreen() {
           </div>
 
           <StrikeZone zone={pitchCall.zone} handedness={handedness} />
-
-          <div className="text-center">
-            <p className="text-gray-700 font-semibold text-base">
-              {zoneLabel(pitchCall.zone, handedness)}
-            </p>
-          </div>
         </div>
 
         {/* Home plate illustration */}

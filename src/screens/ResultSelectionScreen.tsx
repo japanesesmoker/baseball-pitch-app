@@ -1,7 +1,7 @@
 import { useStore } from '../store/useStore';
 
 export function ResultSelectionScreen() {
-  const { game, pitchers, recordResult, changePitcher, endGame, setScreen } = useStore();
+  const { game, pitchers, recordResult, changePitcher, setScreen } = useStore();
 
   const pitcher = pitchers.find((p) => p.id === game?.pitcherId);
   if (!game || !pitcher) return null;
@@ -51,23 +51,12 @@ export function ResultSelectionScreen() {
 
         {/* Game control */}
         <div>
-          <p className="text-xs text-gray-400 font-medium uppercase tracking-wider mb-3">ゲームコントロール</p>
-          <div className="flex flex-col gap-3">
-            <button
-              onClick={() => {
-                changePitcher();
-              }}
-              className="bg-white border border-gray-200 rounded-xl py-4 px-6 font-bold text-gray-700 shadow flex items-center justify-center gap-2 active:bg-gray-50 transition-colors"
-            >
-              <span>🔄</span> 投手交代
-            </button>
-            <button
-              onClick={endGame}
-              className="bg-white border border-gray-200 rounded-xl py-4 px-6 font-bold text-gray-400 shadow flex items-center justify-center gap-2 active:bg-gray-50 transition-colors"
-            >
-              <span>🏁</span> 試合終了
-            </button>
-          </div>
+          <button
+            onClick={() => changePitcher()}
+            className="w-full bg-white border border-gray-200 rounded-xl py-4 px-6 font-bold text-gray-700 shadow flex items-center justify-center gap-2 active:bg-gray-50 transition-colors"
+          >
+            <span>🔄</span> 投手交代
+          </button>
         </div>
 
         {/* Back to pitching */}

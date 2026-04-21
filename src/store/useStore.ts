@@ -41,7 +41,7 @@ interface Store {
   deletePitcher: (id: string) => void;
 
   startGame: (pitcherId: string) => void;
-  startBatter: (handedness: BatterHandedness) => void;
+  startBatter: (handedness: BatterHandedness, patternId?: number) => void;
   nextPitch: () => void;
   prevPitch: () => void;
   goToPrevBatter: () => void;
@@ -104,24 +104,23 @@ export const useStore = create<Store>()(
         }));
       },
 
-      startBatter: (handedness) => {
+      startBatter: (handedness, patternId?) => {
         const state = get();
         if (!state.game) return;
         const pitcher = state.pitchers.find((p) => p.id === state.game!.pitcherId);
         if (!pitcher) return;
-        // Pick a random pattern
-        const patternId = Math.floor(Math.random() * 20) + 1;
+        const pid = patternId ?? Math.floor(Math.random() * 20) + 1;
         set({
           screen: 'pitch-display',
           game: {
             ...state.game,
             currentHandedness: handedness,
-            currentPatternId: patternId,
+            currentPatternId: pid,
             currentPitchIndex: 0,
             currentBatterResult: {
               id: crypto.randomUUID(),
               handedness,
-              patternId,
+              patternId: pid,
               result: null,
               pitchCount: 0,
               date: new Date().toISOString(),
