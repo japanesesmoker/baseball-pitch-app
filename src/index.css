@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gray-100 font-sans;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior: none;
+  }
+}
+
+@layer components {
+  .input-base {
+    @apply border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white;
+  }
+}
+
+@layer utilities {
+  .border-navy-800 {
+    border-color: #132040;
+  }
+  .bg-navy-800 {
+    background-color: #132040;
+  }
+  .bg-navy-900 {
+    background-color: #0d1530;
+  }
+  .text-navy-800 {
+    color: #132040;
+  }
+}
