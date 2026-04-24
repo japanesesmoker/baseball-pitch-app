@@ -21,7 +21,8 @@ export function ResultSelectionScreen() {
         {/* At-bat result */}
         <div>
           <p className="text-xs text-gray-400 font-medium uppercase tracking-wider mb-3">打席結果</p>
-          <div className="flex gap-3">
+          {/* アウト系 */}
+          <div className="flex gap-3 mb-3">
             <button
               onClick={() => recordResult('out')}
               className="flex-1 bg-white border-2 border-green-400 rounded-2xl p-4 flex flex-col items-center gap-2 shadow active:bg-green-50 transition-colors"
@@ -29,6 +30,16 @@ export function ResultSelectionScreen() {
               <span className="text-3xl">✅</span>
               <span className="font-bold text-green-600">アウト</span>
             </button>
+            <button
+              onClick={() => recordResult('strikeout')}
+              className="flex-1 bg-white border-2 border-blue-400 rounded-2xl p-4 flex flex-col items-center gap-2 shadow active:bg-blue-50 transition-colors"
+            >
+              <span className="text-3xl">🔵</span>
+              <span className="font-bold text-blue-600">三振</span>
+            </button>
+          </div>
+          {/* 安打系 */}
+          <div className="flex gap-3">
             <button
               onClick={() => recordResult('hit')}
               className="flex-1 bg-white border-2 border-yellow-400 rounded-2xl p-4 flex flex-col items-center gap-2 shadow active:bg-yellow-50 transition-colors"
@@ -42,6 +53,13 @@ export function ResultSelectionScreen() {
             >
               <span className="text-3xl">🔴</span>
               <span className="font-bold text-red-500">HR</span>
+            </button>
+            <button
+              onClick={() => recordResult('walk')}
+              className="flex-1 bg-white border-2 border-purple-400 rounded-2xl p-4 flex flex-col items-center gap-2 shadow active:bg-purple-50 transition-colors"
+            >
+              <span className="text-3xl">🟣</span>
+              <span className="font-bold text-purple-600">四球</span>
             </button>
           </div>
         </div>

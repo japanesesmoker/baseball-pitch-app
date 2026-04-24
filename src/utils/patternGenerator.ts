@@ -28,12 +28,12 @@ const PITCH_SPEED: Record<string, number> = {
   'ツーシームファスト': 14,
   'ムービングファスト': 13, 'Hスライダー': 13, 'カットボール': 13,
   'Hシュート': 13, 'シンキングツーシーム': 13,
-  'SFF': 12, 'シュート': 12,
+  'SFF': 12, 'シュート': 12, 'カミソリシュート': 12,
   'Vスライダー': 11, 'Hシンカー': 11,
-  'スライダー': 10, 'スラーブ': 10, 'パワーカーブ': 10, 'フォーク': 10,
-  'ドロップカーブ': 9, 'ナックルカーブ': 9, 'ドロップ': 9, 'シンカー/スクリュー': 9,
+  'スイーパー': 10, 'スライダー': 10, 'スラーブ': 10, 'パワーカーブ': 10, 'フォーク': 10,
+  'ドロップカーブ': 9, 'ナックルカーブ': 9, 'ドロップ': 9, 'シンカー/スクリュー': 9, 'ヨシボール': 9,
   'チェンジアップ': 8, 'パーム': 8, 'サークルチェンジ': 8,
-  'カーブ': 7, 'ナックル': 7,
+  'カーブ': 7, 'ナックル': 7, 'エモボール': 7,
   'スローカーブ': 5,
   '超スローボール': 1,
 };
@@ -111,7 +111,9 @@ function selectZone(
   dir: PitchDirection,
   hand: 'right' | 'left',
   history: PitchCall[],
-  rng: () => number
+  rng: () => number,
+  breakAmount: number = 3,
+  pitchIndex: number = 0,
 ): ZonePos {
   const prev  = history[history.length - 1];
   const prev2 = history[history.length - 2];
@@ -168,12 +170,16 @@ function selectZone(
     // Corners are prime pitching locations
     if (typeof z === 'number' && [1, 3, 7, 9].includes(z)) w *= 1.4;
 
-    // Ball zones: use occasionally for disruption (waste pitch strategy)
-    // Give them reasonable weight but not as high as strike zones
+    // Ball zones: weighted by break amount and pitch position
     if (isBallZone(z)) {
-      // After 2+ consecutive strikes, ball zone is attractive
+      // 変化量が大きいほどボールゾーンを積極的に使う（0.25〜1.0）
+      const breakWeight = 0.25 + (breakAmount / 7) * 0.75;
+      // 後半（6球目以降）はボールゾーンの重みをさらに上げる
+      const lateBonus = pitchIndex >= 5 ? 1.6 : 1.0;
+      // ボール連投は抑制
       const recentBalls = history.slice(-2).filter(p => isBallZone(p.zone)).length;
-      w *= recentBalls < 1 ? 0.6 : 0.3;
+      const consecPenalty = recentBalls >= 1 ? 0.35 : 1.0;
+      w *= breakWeight * lateBonus * consecPenalty;
     }
 
     return [z, Math.max(0, w)];
@@ -191,9 +197,12 @@ function selectZone(
 
 type PitchRank = 'straight' | 'zenryoku' | 'A' | 'B' | 'C' | 'D' | 'other';
 
-const RANK_A = new Set(['カットボール', 'Hスライダー', 'Hシュート', 'SFF', 'フォーク']);
-const RANK_B = new Set(['Vスライダー', 'Hシンカー', 'チェンジアップ', 'シュート', 'スライダー', 'シンカー/スクリュー', 'シンキングツーシーム']);
-const RANK_C = new Set(['パーム', 'ナックルカーブ', 'サークルチェンジ', 'カーブ', 'スローカーブ', 'ドロップ', 'ドロップカーブ', 'スラーブ']);
+const RANK_A = new Set(['カットボール', 'Hスライダー', 'Hシュート', 'SFF', 'フォーク', 'カミソリシュート']);
+const RANK_B = new Set(['Vスライダー', 'Hシンカー', 'チェンジアップ', 'シュート', 'スライダー', 'シンカー/スクリュー', 'シンキングツーシーム', 'スイーパー', 'ヨシボール']);
+const RANK_C = new Set(['パーム', 'ナックルカーブ', 'サークルチェンジ', 'カーブ', 'スローカーブ', 'ドロップ', 'ドロップカーブ', 'スラーブ', 'エモボール']);
+
+// オリジナル変化球：使用頻度を大幅に優先する
+const ORIGINAL_PITCHES = new Set(['エモボール', 'ヨシボール', 'カミソリシュート', 'スイーパー']);
 
 function getPitchRank(name: string): PitchRank {
   if (name === 'ストレート') return 'straight';
@@ -254,20 +263,24 @@ function selectPitch(
       if (pitchIndex < 5) return [p, 0];
     }
 
-    // Max count limits per rank
+    const isOriginal = ORIGINAL_PITCHES.has(p.name);
+
+    // Max count limits per rank（オリジナルはC上限を緩和）
     if (rank === 'A' && counts.A >= 3) return [p, 0];
     if (rank === 'B' && counts.B >= 3) return [p, 0];
-    if (rank === 'C' && counts.C >= 1) return [p, 0];
+    if (rank === 'C' && counts.C >= (isOriginal ? 2 : 1)) return [p, 0];
     if (rank === 'D' && counts.D >= 1) return [p, 0];
 
-    // After C or D: next must be ストレート or A rank
+    // After C or D: next must be ストレート or A rank（オリジナルCの後は制限なし）
     if (prevRank === 'C' || prevRank === 'D') {
-      if (rank !== 'straight' && rank !== 'A') return [p, 0];
+      const prevIsOriginal = prev && ORIGINAL_PITCHES.has(prev.pitchType);
+      if (!prevIsOriginal && rank !== 'straight' && rank !== 'A') return [p, 0];
     }
 
-    // C and D cannot be used consecutively
+    // C and D cannot be used consecutively（オリジナル同士は許容）
     if ((rank === 'C' || rank === 'D') && (prevRank === 'C' || prevRank === 'D')) {
-      return [p, 0];
+      const prevIsOriginal = prev && ORIGINAL_PITCHES.has(prev.pitchType);
+      if (!isOriginal || !prevIsOriginal) return [p, 0];
     }
 
     // No 3 in a row same pitch (ストレート is exempt)
@@ -297,8 +310,18 @@ function selectPitch(
     if (rank === 'A' && aNeeded > 0) w *= 3.0;
     if (rank === 'B' && bNeeded > 0) w *= 2.5;
 
-    // Suppress C/D — they are accent pitches used sparingly
-    if (rank === 'C' || rank === 'D') w *= 0.35;
+    // Suppress C/D — they are accent pitches used sparingly（オリジナルは抑制しない）
+    if ((rank === 'C' || rank === 'D') && !isOriginal) w *= 0.35;
+
+    // オリジナル変化球は大幅に優先
+    if (isOriginal) w *= 3.5;
+
+    // 変化量による使用頻度の調整（ストレート系は除く）
+    if (rank !== 'straight' && rank !== 'zenryoku') {
+      // 変化量1→0.6、変化量4→1.0、変化量7→1.8 の範囲で重みを変える
+      const breakMultiplier = 0.6 + ((p.breakAmount - 1) / 6) * 1.2;
+      w *= Math.max(0.6, Math.min(1.8, breakMultiplier));
+    }
 
     // Speed variation
     if (prevSpeed !== null) {
@@ -345,7 +368,7 @@ export function generatePatterns(pitcher: Pitcher): PitchPattern[] {
       const pt = selectPitch(pitcher.pitchTypes, j, pitches, zenryokuUsed, rng);
       if (pt.name === '全力ストレート') zenryokuUsed = true;
 
-      const zone = selectZone(pt.direction, hand, pitches, rng);
+      const zone = selectZone(pt.direction, hand, pitches, rng, pt.breakAmount, j);
 
       pitches.push({ pitchNumber: j + 1, pitchType: pt.name, zone });
     }

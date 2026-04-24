@@ -18,6 +18,7 @@ export const PITCH_LIST: PitchDefinition[] = [
   { name: 'スライダー',   direction: 'slider' },
   { name: 'Hスライダー',  direction: 'slider' },
   { name: 'カットボール', direction: 'slider' },
+  { name: 'スイーパー',   direction: 'slider' },
   // カーブ系
   { name: 'カーブ',         direction: 'curve' },
   { name: 'スローカーブ',    direction: 'curve' },
@@ -26,6 +27,7 @@ export const PITCH_LIST: PitchDefinition[] = [
   { name: 'ナックルカーブ',  direction: 'curve' },
   { name: 'パワーカーブ',    direction: 'curve' },
   { name: 'ドロップ',       direction: 'curve' },
+  { name: 'エモボール',      direction: 'curve' },
   // フォーク系
   { name: 'フォーク',       direction: 'fork' },
   { name: 'SFF',           direction: 'fork' },
@@ -33,6 +35,7 @@ export const PITCH_LIST: PitchDefinition[] = [
   { name: 'Vスライダー',    direction: 'fork' },
   { name: 'パーム',         direction: 'fork' },
   { name: 'ナックル',       direction: 'fork' },
+  { name: 'ヨシボール',      direction: 'fork' },
   // シンカー系
   { name: 'シンカー/スクリュー', direction: 'sinker' },
   { name: 'Hシンカー',          direction: 'sinker' },
@@ -41,6 +44,7 @@ export const PITCH_LIST: PitchDefinition[] = [
   { name: 'シュート',           direction: 'shoot' },
   { name: 'Hシュート',          direction: 'shoot' },
   { name: 'シンキングツーシーム', direction: 'shoot' },
+  { name: 'カミソリシュート',    direction: 'shoot' },
 ];
 
 export const PITCH_LIST_BY_DIRECTION = Object.fromEntries(
@@ -53,10 +57,10 @@ export function detectPitchDirection(pitchName: string): PitchDirection {
   if (found) return found.direction;
 
   // Fallback for OCR slight name variations
-  if (/フォーク|SFF|パーム|ナックル|チェンジアップ|Vスライダー/.test(pitchName)) return 'fork';
+  if (/フォーク|SFF|パーム|ナックル|チェンジアップ|Vスライダー|ヨシボール/.test(pitchName)) return 'fork';
   if (/シンカー|スクリュー|Hシンカー|サークルチェンジ/.test(pitchName)) return 'sinker';
   if (/シュート|Hシュート|シンキング/.test(pitchName)) return 'shoot';
-  if (/スライダー|カットボール/.test(pitchName)) return 'slider';
-  if (/カーブ|ドロップ|スラーブ/.test(pitchName)) return 'curve';
+  if (/スライダー|カットボール|スイーパー/.test(pitchName)) return 'slider';
+  if (/カーブ|ドロップ|スラーブ|エモボール/.test(pitchName)) return 'curve';
   return 'straight';
 }

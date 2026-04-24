@@ -44,12 +44,19 @@ export interface PitchCall {
   zone: ZonePos;
 }
 
+export interface PitchInSequence {
+  pitchNumber: number; // 1-based
+  pitchType: string;
+  zone: ZonePos;
+}
+
 export interface PatternResult {
   id: string;
   patternId: number;
   batterHandedness: 'right' | 'left';
-  result: 'hit' | 'out' | 'homerun';
+  result: 'hit' | 'out' | 'homerun' | 'strikeout' | 'walk';
   date: string;
+  pitchSequence?: PitchInSequence[]; // 結果球 + 直前最大3球
 }
 
 export interface PitchPattern {
@@ -82,7 +89,7 @@ export interface BatterResult {
   id: string;
   handedness: BatterHandedness;
   patternId: number;
-  result: 'hit' | 'out' | 'homerun' | null;
+  result: 'hit' | 'out' | 'homerun' | 'strikeout' | 'walk' | null;
   pitchCount: number;
   date: string;
 }

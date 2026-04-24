@@ -45,7 +45,7 @@ interface Store {
   nextPitch: () => void;
   prevPitch: () => void;
   goToPrevBatter: () => void;
-  recordResult: (result: 'hit' | 'out' | 'homerun') => void;
+  recordResult: (result: 'hit' | 'out' | 'homerun' | 'strikeout' | 'walk') => void;
   changePitcher: () => void;
   endGame: () => void;
   addPatternResult: (pitcherId: string, patternId: number, result: PatternResult) => void;
@@ -180,14 +180,23 @@ export const useStore = create<Store>()(
         });
       },
 
-      recordResult: (result) => {
+      recordResult: (result: 'hit' | 'out' | 'homerun' | 'strikeout' | 'walk') => {
         const state = get();
         if (!state.game) return;
-        const { pitcherId, sessionId, currentBatterResult, pastBatters, currentPatternId } = state.game;
+        const { pitcherId, sessionId, currentBatterResult, pastBatters, currentPatternId, currentPitchIndex } = state.game;
         const updatedBatter: BatterResult = {
           ...currentBatterResult,
           result,
         };
+
+        // 結果球と直前最大3球の投球シーケンスを取得
+        const pitcher = state.pitchers.find((p) => p.id === pitcherId);
+        const pattern = pitcher?.patterns.find((p) => p.id === currentPatternId);
+        const pitchSequence = pattern
+          ? pattern.pitches
+              .slice(Math.max(0, currentPitchIndex - 3), currentPitchIndex + 1)
+              .map((p) => ({ pitchNumber: p.pitchNumber, pitchType: p.pitchType, zone: p.zone }))
+          : [];
 
         // Save result to pitcher pattern
         const patternResult: PatternResult = {
@@ -196,6 +205,7 @@ export const useStore = create<Store>()(
           batterHandedness: currentBatterResult.handedness,
           result,
           date: new Date().toISOString(),
+          pitchSequence,
         };
         get().addPatternResult(pitcherId, currentPatternId, patternResult);
 
